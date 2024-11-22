@@ -8,8 +8,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.ucsal.annotations.Singleton;
 import br.com.ucsal.model.Produto;
-import br.com.ucsal.util.DatabaseUtil;
+import br.com.ucsal.util.database.DatabaseUtil;
+
 
 public class HSQLProdutoRepository implements ProdutoRepository<Produto, Integer>{
 

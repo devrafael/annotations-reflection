@@ -6,14 +6,16 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import br.com.ucsal.commands.rotas.RotaCommand;
 
+import br.com.ucsal.annotations.Rota;
+import br.com.ucsal.commands.Command;
+import br.com.ucsal.commands.rotas.RotaCommand;
 
 @WebServlet("/view/*")
 public class ProdutoController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	private RotaCommand registradorRota;
+	private RotaCommand rotaCommand;
 	
 	public ProdutoController() {
 		super();
@@ -23,8 +25,8 @@ public class ProdutoController extends HttpServlet {
 	public void init() throws ServletException {
 		super.init();
 		try {
-			registradorRota = new RotaCommand(new InicializadorListener());
-			registradorRota.getInicializadorListener().processarRotas("br.com.ucsal");
+			rotaCommand = new RotaCommand(new InicializadorListener());
+			rotaCommand.getInicializadorListener().processarRotas("br.com.ucsal");
 		} catch (Exception e) {
 			throw new ServletException("Erro ao inicializar rotas.", e);
 		}
@@ -37,10 +39,11 @@ public class ProdutoController extends HttpServlet {
 		System.out.println(path);
 
 		try {
-			registradorRota.execute(request, response);
+			rotaCommand.execute(request, response);
 		} catch (Exception e) {
 			e.printStackTrace();
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erro ao processar a requisição.");
 		}
 	}
+
 }

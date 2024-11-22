@@ -1,4 +1,4 @@
-package br.com.ucsal.util;
+package br.com.ucsal.util.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

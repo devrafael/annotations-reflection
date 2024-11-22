@@ -3,10 +3,11 @@ package br.com.ucsal.commands.produtos;
 import java.io.IOException;
 import java.util.List;
 
+import br.com.ucsal.annotations.Inject;
 import br.com.ucsal.annotations.Rota;
+import br.com.ucsal.annotations.Singleton;
 import br.com.ucsal.commands.Command;
 import br.com.ucsal.model.Produto;
-import br.com.ucsal.persistencia.HSQLProdutoRepository;
 import br.com.ucsal.service.ProdutoService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -14,14 +15,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Rota(path = {"/", "/listarProdutos"})
+@Singleton
 public class ProdutoListarCommand implements Command {
     private static final long serialVersionUID = 1L;
+   
+    @Inject
 	private ProdutoService produtoService;
-
-	public ProdutoListarCommand() {
-        produtoService = new ProdutoService(new HSQLProdutoRepository());
-	}
-	
 
     @Override
     public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

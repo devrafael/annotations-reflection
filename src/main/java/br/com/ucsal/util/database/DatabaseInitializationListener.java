@@ -1,4 +1,4 @@
-package br.com.ucsal.util;
+package br.com.ucsal.util.database;
 
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -9,12 +9,12 @@ public class DatabaseInitializationListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        System.out.println("Iniciando o banco de dados HSQLDB...");
+        System.out.println("\nIniciando o banco de dados HSQLDB...");
         DatabaseUtil.iniciarBanco();
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        System.out.println("Aplicação sendo finalizada.");
+        System.out.println("\nAplicação sendo finalizada.");
     }
 }

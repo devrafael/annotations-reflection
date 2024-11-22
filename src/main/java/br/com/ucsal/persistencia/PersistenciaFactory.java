@@ -1,20 +1,22 @@
 package br.com.ucsal.persistencia;
 
+import br.com.ucsal.controller.InicializadorListener;
+
 public class PersistenciaFactory {
 
-	public static final int MEMORIA = 0;
-	public static final int HSQL = 1;
+	public static final int PRODUTO_MEMORIA = 0;
+	public static final int PRODUTO_HSQL = 1;
 	
 	public static ProdutoRepository<?, ?> getProdutoRepository(int type) {
 		ProdutoRepository<?, ?> produtoRepository;
 		switch (type) {
-		case 0: {
-			produtoRepository = MemoriaProdutoRepository.getInstancia();
+		case PRODUTO_MEMORIA: {
+			produtoRepository = InicializadorListener.getInstanceSingleton(MemoriaProdutoRepository.class);
+			System.out.println("Pegou a Instancia de MemoriaProdutoRepository");			
 			break;
 		}
-		case 1: {
+		case PRODUTO_HSQL: {
 			produtoRepository = new HSQLProdutoRepository();
-
 			break;
 		}
 		default:
@@ -22,6 +24,4 @@ public class PersistenciaFactory {
 		}
 		return produtoRepository;
 	}
-	
-	
 }

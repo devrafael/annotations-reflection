@@ -177,7 +177,7 @@ public class InicializadorListener implements ServletContextListener {
 
 	// Método para obter a dependência com base no tipo do campo
 	private Object obterDependencia(Class<?> tipo) {
-			System.out.println("tipo.getName(): " + tipo.getName());
+			System.out.println("Tipo do atribudo: " + tipo.getName());
 		if (ProdutoService.class.isAssignableFrom(tipo)) {
 			ProdutoRepository<?, ?> repository = PersistenciaFactory.getProdutoRepository(0);
 			if (repository == null) {

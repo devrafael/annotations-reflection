@@ -12,7 +12,6 @@ public class PersistenciaFactory {
 		switch (type) {
 		case PRODUTO_MEMORIA: {
 			produtoRepository = InicializadorListener.getInstanceSingleton(MemoriaProdutoRepository.class);
-			System.out.println("Pegou a Instancia de MemoriaProdutoRepository");			
 			break;
 		}
 		case PRODUTO_HSQL: {

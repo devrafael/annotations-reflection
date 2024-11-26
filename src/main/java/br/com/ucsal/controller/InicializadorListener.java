@@ -14,6 +14,7 @@ import br.com.ucsal.annotations.Inject;
 import br.com.ucsal.annotations.Rota;
 import br.com.ucsal.annotations.Singleton;
 import br.com.ucsal.commands.Command;
+import br.com.ucsal.commands.rotas.RotaCommand;
 import br.com.ucsal.persistencia.PersistenciaFactory;
 import br.com.ucsal.persistencia.ProdutoRepository;
 import br.com.ucsal.service.ProdutoService;
@@ -27,23 +28,34 @@ public class InicializadorListener implements ServletContextListener {
 	String basePackage = "br.com.ucsal";
 	private final String PREFIX = "/prova2/view";
 	private final Map<String, Command> rotas = new HashMap<>();
-	private static final Map<Class<?>, Object> instances = new HashMap<>();
+	private static final Map<Class<?>, Object> INSTANCES_SINGLETON = new HashMap<>();
+	private Map<String, Object> instances_commands = new HashMap<>();
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		// Carregue suas classes ou inicialize recursos aqui
 		System.out.println("Inicializando recursos na inicialização da aplicação");
 		try {
+			InicializadorListener inicializadorListener = new InicializadorListener();
+			System.out.println(getFiltroNomeClasseDeclarada(InicializadorListener.class.getName())
+					+ InicializadorListener.class.getName());
+			instances_commands.put(getFiltroNomeClasseDeclarada(InicializadorListener.class.getName()),
+					inicializadorListener);
+
 			processarSingletons(basePackage);
-			injetarDependencias(basePackage);
 			processarRotas(basePackage);
+			injetarDependencias(basePackage);
 
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
 			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
+//	// Método para processar as rotas
 	public void processarRotas(String basePackage) throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
@@ -54,10 +66,13 @@ public class InicializadorListener implements ServletContextListener {
 		for (Class<?> classe : classes) {
 
 			if (classe.isAnnotationPresent(Rota.class)) {
-				System.out.println("\nClasse encontrada: " + classe.getName());
+				System.out.println("\nClasse encontrada: " + getFiltroNomeClasseDeclarada(classe.getName()));
 				Rota rotaClasse = classe.getAnnotation(Rota.class);
 				for (int i = 0; i < rotaClasse.path().length; i++) {
 					Command commandInstance = (Command) getInstanceSingleton(classe);
+
+					String nomeClasse = getFiltroNomeClasseDeclarada(classe.getName());
+					instances_commands.put(nomeClasse, commandInstance);
 
 					String path = PREFIX + rotaClasse.path()[i].replaceAll("//", "/");
 					System.out.println("Path da classe: " + rotaClasse.path()[i]);
@@ -69,7 +84,14 @@ public class InicializadorListener implements ServletContextListener {
 		}
 		System.out.println("\nRotas registradas:");
 		for (String key : rotas.keySet()) {
-			System.out.println("Chave Registrada: " + key);
+			Object valor = rotas.get(key);
+			System.out.println("Chave Registrada: " + key + ", Valor: " + valor);
+		}
+
+		System.out.println("\nInstancias registradas:");
+		for (String key : instances_commands.keySet()) {
+			Object valor = instances_commands.get(key);
+			System.out.println("Chave Registrada: " + key + ", Valor: " + valor);
 		}
 
 	}
@@ -78,6 +100,11 @@ public class InicializadorListener implements ServletContextListener {
 		return rotas.get(path);
 	}
 
+	public String getFiltroNomeClasseDeclarada(String nomeClasse) {
+		return nomeClasse.substring(nomeClasse.lastIndexOf(".") + 1);
+	}
+
+//	// Método para processar as instâncias Singletons
 	public void processarSingletons(String basePackage) {
 
 		Reflections reflections = new Reflections(basePackage, Scanners.TypesAnnotated);
@@ -87,10 +114,9 @@ public class InicializadorListener implements ServletContextListener {
 		for (Class<?> clazz : singletonClasses) {
 
 			System.out.println("Classe anotada com @Singleton encontrada: " + clazz.getName());
-			getInstanceSingleton(clazz); // Garante a criação da instância Singleton
-			// Log para identificar quem está chamando
-			System.out.println(
-					"getInstance chamado para: " + clazz.getName() + " pela classe: " + new Throwable().getStackTrace()[1]);
+			getInstanceSingleton(clazz);
+			System.out.println("getInstance chamado para: " + clazz.getName() + " pela classe: "
+					+ new Throwable().getStackTrace()[1]);
 		}
 	}
 
@@ -101,54 +127,59 @@ public class InicializadorListener implements ServletContextListener {
 		}
 
 		// Retorna a instância existente ou cria uma nova
-		return (T) instances.computeIfAbsent(clazz, InicializadorListener::createInstanceSingleton);
+		return (T) INSTANCES_SINGLETON.computeIfAbsent(clazz, InicializadorListener::createInstanceSingleton);
 	}
 
 	private static <T> T createInstanceSingleton(Class<T> clazz) {
 		try {
 			System.out.println("Instancia criada da classe: " + clazz + "\n");
-			// System.out.flush();
 			return clazz.getDeclaredConstructor().newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException("Não foi possível criar a instância da classe " + clazz.getName(), e);
 		}
 	}
 
-	// Método para injetar dependências em campos anotados com @Inject
-	private void injetarDependencias(String basePackage) throws IllegalAccessException, InstantiationException,
-			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-		Reflections reflections = new Reflections(basePackage, Scanners.TypesAnnotated);
-		Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Rota.class);
-		System.out.println("\n===LOG SOBRE INJEÇÃO DE DEPENDÊNCIA===");
+	// Método para injetar dependências
+	private void injetarDependencias(String basePackage) throws IllegalAccessException, InstantiationException {
+		// Usa Reflections para localizar todos os campos anotados com @Inject
+		Reflections reflections = new Reflections(basePackage, Scanners.FieldsAnnotated);
+		Set<Field> fields = reflections.getFieldsAnnotatedWith(Inject.class);
 
-		for (Class<?> clazz : classes) {
-			// Processa os campos anotados com @Inject
-			for (Field field : clazz.getDeclaredFields()) {
-				if (field.isAnnotationPresent(Inject.class)) {
-					field.setAccessible(true);
-					System.out.println("\nCampo: " + field.getName());
+		System.out.println("\n=== LOG SOBRE INJEÇÃO DE DEPENDÊNCIA ===");
 
-					Object dependency = obterDependencia(field.getType());
+		for (Field field : fields) {
+			field.setAccessible(true);
 
-					if (dependency != null) {
-						if (Modifier.isStatic(field.getModifiers())) {
-							field.set(null, dependency);
-						} else {
-							Object instance = getInstanceSingleton(clazz);
-							field.set(instance, dependency);
-						}
-						System.out.println("Dependência injetada com sucesso na instância: " + field.getName()
-						+ " na classe: " + clazz.getName());
-					}
+			// Obtém a classe onde o campo está declarado
+			Class<?> declaringClass = field.getDeclaringClass();
+			String nomeClasse = declaringClass.getSimpleName();
 
+			System.out.println("\nProcessando injeção para o campo: " + field.getName() + " na classe: "
+					+ declaringClass.getSimpleName());
+
+			
+			// Obter a dependência correspondente ao tipo do campo
+			Object dependency = obterDependencia(field.getType());
+			if (dependency != null) {
+				if (Modifier.isStatic(field.getModifiers())) {
+					field.set(null, dependency);
+				} else {
+					Object instance = instances_commands.get(nomeClasse);
+					field.set(instance, dependency);
 				}
+				System.out.println("Dependência injetada com sucesso na instância: " + field.getName() + " na classe: "
+						+ nomeClasse);
 			}
+
 		}
 	}
+	
 
+	// Método para obter a dependência com base no tipo do campo
 	private Object obterDependencia(Class<?> tipo) {
+			System.out.println("tipo.getName(): " + tipo.getName());
 		if (ProdutoService.class.isAssignableFrom(tipo)) {
-			ProdutoRepository<?, ?> repository = PersistenciaFactory.getProdutoRepository(1);
+			ProdutoRepository<?, ?> repository = PersistenciaFactory.getProdutoRepository(0);
 			if (repository == null) {
 				throw new IllegalStateException("ProdutoRepository não pode ser nulo");
 			}
@@ -156,5 +187,5 @@ public class InicializadorListener implements ServletContextListener {
 		}
 		throw new IllegalArgumentException("Não foi possível resolver a dependência para o tipo: " + tipo.getName());
 	}
-
+	
 }

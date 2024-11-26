@@ -7,13 +7,22 @@ import br.com.ucsal.persistencia.PersistenciaFactory;
 import br.com.ucsal.persistencia.ProdutoRepository;
 
 public class ProdutoService {
+
+	
  private ProdutoRepository<Produto, Integer> produtoRepository;
 
  public ProdutoService(ProdutoRepository<?, ?> produtoRepository) {
 	 this.produtoRepository = (ProdutoRepository<Produto, Integer>) produtoRepository;
  }
+ 
 
- public void adicionarProduto(String nome, double preco) {
+ public ProdutoService() {
+	super();
+}
+
+
+
+public void adicionarProduto(String nome, double preco) {
      Produto produto = new Produto(null, nome, preco);
      produtoRepository.adicionar(produto);
      

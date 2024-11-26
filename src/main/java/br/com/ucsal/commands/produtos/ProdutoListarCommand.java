@@ -21,6 +21,8 @@ public class ProdutoListarCommand implements Command {
    
     @Inject
 	private ProdutoService produtoService;
+    
+    public ProdutoListarCommand() {}
 
     @Override
     public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

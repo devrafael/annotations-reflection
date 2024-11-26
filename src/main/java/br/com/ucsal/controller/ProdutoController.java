@@ -7,19 +7,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import br.com.ucsal.annotations.Inject;
 import br.com.ucsal.annotations.Rota;
-import br.com.ucsal.commands.Command;
 import br.com.ucsal.commands.rotas.RotaCommand;
 
 @WebServlet("/view/*")
 public class ProdutoController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	private RotaCommand rotaCommand;
-	
-	public ProdutoController() {
-		super();
-	}
+	//@Inject
+	private static RotaCommand rotaCommand;
+
 
 	@Override
 	public void init() throws ServletException {
@@ -27,6 +25,7 @@ public class ProdutoController extends HttpServlet {
 		try {
 			rotaCommand = new RotaCommand(new InicializadorListener());
 			rotaCommand.getInicializadorListener().processarRotas("br.com.ucsal");
+		
 		} catch (Exception e) {
 			throw new ServletException("Erro ao inicializar rotas.", e);
 		}

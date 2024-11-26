@@ -8,7 +8,7 @@ import br.com.ucsal.persistencia.ProdutoRepository;
 
 public class ProdutoService {
 
-	
+
  private ProdutoRepository<Produto, Integer> produtoRepository;
 
  public ProdutoService(ProdutoRepository<?, ?> produtoRepository) {

@@ -14,7 +14,7 @@ import br.com.ucsal.annotations.Inject;
 import br.com.ucsal.annotations.Rota;
 import br.com.ucsal.annotations.Singleton;
 import br.com.ucsal.commands.Command;
-import br.com.ucsal.commands.rotas.RotaCommand;
+//import br.com.ucsal.commands.rotas.RotaCommand;
 import br.com.ucsal.persistencia.PersistenciaFactory;
 import br.com.ucsal.persistencia.ProdutoRepository;
 import br.com.ucsal.service.ProdutoService;
@@ -36,15 +36,11 @@ public class InicializadorListener implements ServletContextListener {
 		// Carregue suas classes ou inicialize recursos aqui
 		System.out.println("Inicializando recursos na inicialização da aplicação");
 		try {
-			InicializadorListener inicializadorListener = new InicializadorListener();
-			System.out.println(getFiltroNomeClasseDeclarada(InicializadorListener.class.getName())
-					+ InicializadorListener.class.getName());
-			instances_commands.put(getFiltroNomeClasseDeclarada(InicializadorListener.class.getName()),
-					inicializadorListener);
-
+			
 			processarSingletons(basePackage);
 			processarRotas(basePackage);
 			injetarDependencias(basePackage);
+			sce.getServletContext().setAttribute("command", rotas);
 
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
@@ -74,7 +70,7 @@ public class InicializadorListener implements ServletContextListener {
 					String nomeClasse = getFiltroNomeClasseDeclarada(classe.getName());
 					instances_commands.put(nomeClasse, commandInstance);
 
-					String path = PREFIX + rotaClasse.path()[i].replaceAll("//", "/");
+					String path = rotaClasse.path()[i].replaceAll("//", "/");
 					System.out.println("Path da classe: " + rotaClasse.path()[i]);
 					rotas.put(path, commandInstance);
 				}
